@@ -1,17 +1,21 @@
 
 function statement(invoice, plays) {
-  const statementData = {};
-  statementData.customer = invoice.customer;
-  statementData.performances = invoice.performances.map(enrichPerformance);
-  return renderPlainText(statementData, invoice, plays);
+  return renderPlainText(createStatementData(invoice, plays));
+
+  function createStatementData(invoice, plays) {
+    const result = {};
+    result.customer = invoice.customer;
+    result.performances = invoice.performances.map(enrichPerformance);
+    result.totalAmount = totalAmount(result);
+    result.totalVolumeCredits = totalVolumeCredits(result);
+    return result;
+  }
 
   function enrichPerformance(aPerformance){
     const result = Object.assign({}, aPerformance);
     result.play = playFor(result);
     result.amount = amountFor(result);
     result.volumeCredits = volumeCreditsFor(result);
-    result.totalAmount = totalAmount(statementData);
-    result.totalVolumeCredits = totalVolumeCredits(statementData);
     return result;
   }
 
@@ -58,7 +62,7 @@ function statement(invoice, plays) {
 
 }
 
-function renderPlainText (data, invoice, plays) {
+function renderPlainText (data) {
   let result = `Statement for ${data.customer}\n`;
   for (let perf of data.performances) {
     result += `  ${perf.play.name}: ${usd(perf.amount)} (${perf.audience} seats)\n`;
